@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SANG SUR MER</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+:root{--ink:#07050a;--paper:#ede5d4;--blood:#7a1212;--red:#c0392b;--gold:#b8973a;--gd:rgba(184,151,58,.28);--mist:#b0a08a;--warn:#c47c1a;--dim:rgba(255,255,255,.05);--dim2:rgba(255,255,255,.09);}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{min-height:100%;overflow-x:hidden;}
+body{background:var(--ink);font-family:'Courier Prime',monospace;color:var(--paper);}
+.bg{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 100% 55% at 50% 100%,#0a1525 0%,transparent 70%),linear-gradient(180deg,#040508 0%,#060c14 60%,#050a10 100%);}
+.drop{position:fixed;width:2px;background:linear-gradient(180deg,var(--blood) 0%,transparent 100%);border-radius:0 0 50% 50%;opacity:0;z-index:1;animation:drip 11s ease-in infinite;}
+@keyframes drip{0%{opacity:0;height:0;top:-10px}20%{opacity:.45;height:50px}80%{opacity:.2;height:110px}100%{opacity:0;height:140px;top:110%}}
+#app{position:relative;z-index:10;max-width:900px;margin:0 auto;padding:0 18px 60px;}
+/* HEADER */
+.hdr{text-align:center;padding:28px 0 20px;border-bottom:1px solid var(--gd);}
+.hdr-eye{font-size:.63rem;letter-spacing:.45em;color:var(--gold);text-transform:uppercase;margin-bottom:8px;}
+.hdr-h1{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,5vw,3.4rem);font-weight:900;line-height:1;text-shadow:0 0 50px rgba(122,18,18,.4);}
+.hdr-h1 em{color:var(--red);font-style:normal;display:block;}
+.hdr-sub{font-size:.65rem;letter-spacing:.2em;color:var(--mist);margin-top:7px;text-transform:uppercase;}
+/* SCREENS */
+.scr{display:none;}.scr.on{display:block;animation:fi .3s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+/* INTRO */
+.intro-body{font-size:.84rem;line-height:1.9;color:var(--mist);text-align:center;max-width:560px;margin:26px auto 22px;}
+.intro-body strong{color:var(--paper);}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;margin-bottom:24px;}
+.how-c{background:var(--dim);border:1px solid rgba(255,255,255,.06);padding:12px 10px;text-align:center;}
+.how-c .ic{font-size:1.3rem;display:block;margin-bottom:5px;}
+.how-c b{font-size:.74rem;color:var(--paper);display:block;margin-bottom:3px;}
+.how-c small{font-size:.64rem;color:var(--mist);line-height:1.4;}
+/* DAY NAV */
+.day-nav{display:flex;border-bottom:1px solid rgba(255,255,255,.06);margin:0 -18px;overflow-x:auto;scrollbar-width:none;}
+.day-nav::-webkit-scrollbar{display:none;}
+.dtab{flex:0 0 auto;padding:11px 16px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--mist);font-family:'Courier Prime',monospace;font-size:.67rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.dtab:hover:not(.locked){color:var(--paper);background:var(--dim);}
+.dtab.act{color:var(--gold);border-bottom-color:var(--gold);background:rgba(184,151,58,.04);}
+.dtab.locked{color:rgba(255,255,255,.17);cursor:default;}
+.dpip{display:inline-block;width:5px;height:5px;border-radius:50%;margin-left:4px;vertical-align:middle;}
+.dpip.m{background:var(--red);box-shadow:0 0 4px var(--red);}
+.dpip.i{background:var(--warn);}
+/* STATS */
+.stats-bar{display:flex;flex-wrap:wrap;gap:6px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);margin-bottom:16px;}
+.stat{font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--mist);background:var(--dim);border:1px solid rgba(255,255,255,.07);padding:4px 10px;}
+.stat strong{color:var(--gold);}
+/* VIEW AREA */
+#view{min-height:200px;}
+/* DAY HEADER */
+.day-hdr{padding:20px 0 13px;}
+.day-lbl{font-size:.6rem;letter-spacing:.38em;color:var(--gold);text-transform:uppercase;margin-bottom:4px;}
+.day-ttl{font-family:'Playfair Display',serif;font-size:1.65rem;font-weight:700;}
+.day-sub{font-size:.75rem;color:var(--mist);margin-top:4px;font-style:italic;}
+/* INCIDENT CARDS */
+.inc{padding:12px 15px;margin-bottom:10px;cursor:pointer;transition:all .2s;position:relative;}
+.inc:hover{filter:brightness(1.12);}
+.inc.murder{background:rgba(122,18,18,.12);border:1px solid rgba(192,57,43,.25);border-left:3px solid var(--red);}
+.inc.minor{background:rgba(196,124,26,.07);border:1px solid rgba(196,124,26,.2);border-left:3px solid var(--warn);}
+.inc.done::after{content:'✓';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--gold);}
+.inc-lbl{font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;margin-bottom:3px;}
+.inc-lbl.m{color:var(--red);}.inc-lbl.i{color:var(--warn);}
+.inc-ttl{font-family:'Playfair Display',serif;font-size:.98rem;margin-bottom:2px;}
+.inc-sub{font-size:.73rem;color:var(--mist);}
+/* SHIP MAP */
+.map-ttl{font-family:'Playfair Display',serif;font-size:.95rem;color:var(--gold);text-align:center;margin:16px 0 11px;}
+.map-ttl::before,.map-ttl::after{content:' — ';opacity:.4;}
+.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:7px;margin-bottom:16px;}
+.room-btn{background:var(--dim);border:1px solid rgba(255,255,255,.07);padding:13px 11px;cursor:pointer;text-align:left;font-family:'Playfair Display',serif;font-size:.9rem;color:var(--paper);transition:all .2s;position:relative;}
+.room-btn:hover{background:var(--dim2);border-color:var(--gd);transform:translateY(-1px);}
+.r-ico{font-size:1.25rem;display:block;margin-bottom:4px;}
+.r-sub{display:block;font-family:'Courier Prime',monospace;font-size:.6rem;color:var(--mist);letter-spacing:.13em;text-transform:uppercase;margin-top:3px;}
+.room-btn.has-clue::after{content:'●';position:absolute;top:7px;right:8px;color:var(--gold);font-size:.5rem;animation:pulse 2s ease-in-out infinite;}
+.room-btn.is-crime::after{content:'🩸';position:absolute;top:5px;right:6px;font-size:.72rem;}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+/* ROOM */
+.room-hdr{display:flex;align-items:center;gap:11px;padding:16px 0 11px;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:13px;}
+.room-ico{font-size:1.9rem;}
+.room-ttl{font-family:'Playfair Display',serif;font-size:1.35rem;}
+.room-desc{font-size:.79rem;color:var(--mist);line-height:1.7;margin-bottom:14px;font-style:italic;}
+.sec-lbl{font-size:.58rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;display:block;}
+/* CLUES */
+.clue-row{background:rgba(184,151,58,.06);border:1px solid rgba(184,151,58,.17);border-left:3px solid var(--gold);padding:9px 12px;font-size:.77rem;color:#ddd5c0;line-height:1.5;margin-bottom:6px;}
+.clue-row.new{animation:flash .7s ease;}
+@keyframes flash{0%{background:rgba(184,151,58,.28)}100%{background:rgba(184,151,58,.06)}}
+/* PERSONS */
+.person-btn{display:flex;align-items:center;gap:10px;background:var(--dim);border:1px solid rgba(255,255,255,.07);padding:10px 12px;cursor:pointer;transition:background .15s,border-color .15s;margin-bottom:7px;width:100%;text-align:left;}
+.person-btn:hover{background:var(--dim2);border-color:var(--gd);}
+.person-btn.talked{border-color:rgba(184,151,58,.25);}
+.pav{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;border:1px solid rgba(255,255,255,.1);}
+.person-btn.talked .pav{border-color:var(--gold);background:rgba(184,151,58,.1);}
+.pinfo{flex:1;}
+.pname{font-size:.85rem;}
+.prole{font-size:.63rem;color:var(--mist);margin-top:2px;}
+.parr{font-size:.65rem;color:var(--mist);}
+/* INCIDENT TEXT */
+.ev-box{padding:15px;margin-bottom:13px;}
+.ev-box.murder{background:rgba(122,18,18,.1);border:1px solid rgba(192,57,43,.22);border-left:4px solid var(--red);}
+.ev-box.minor{background:rgba(196,124,26,.06);border:1px solid rgba(196,124,26,.2);border-left:4px solid var(--warn);}
+.ev-box.crime{background:rgba(122,18,18,.08);border:1px solid rgba(192,57,43,.18);border-left:4px solid var(--red);}
+.ev-lbl{font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;margin-bottom:5px;display:block;}
+.ev-lbl.m{color:var(--red);}.ev-lbl.i{color:var(--warn);}
+.ev-ttl{font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:7px;}
+.ev-body{font-size:.78rem;line-height:1.75;color:#d8c8b8;}
+.ev-body p{margin-bottom:7px;}
+/* DIALOGUE */
+.dial-box{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);padding:18px;margin-bottom:14px;}
+.dial-name{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--gold);margin-bottom:7px;}
+.dial-alibi{font-size:.7rem;color:var(--mist);font-style:italic;margin-bottom:12px;border-left:2px solid rgba(255,255,255,.1);padding-left:8px;}
+.dline{background:rgba(255,255,255,.04);border-left:2px solid rgba(255,255,255,.1);padding:8px 11px;font-size:.8rem;color:var(--paper);line-height:1.5;cursor:pointer;font-style:italic;transition:background .12s,border-color .12s,padding-left .12s;margin-bottom:5px;}
+.dline:hover{background:rgba(255,255,255,.09);border-left-color:var(--gold);padding-left:15px;}
+.dline.used{opacity:.5;border-left-color:rgba(255,255,255,.06);}
+.dresp{background:rgba(28,60,100,.18);border:1px solid rgba(44,96,160,.3);border-left:3px solid #2c6ea0;padding:10px 13px;font-size:.79rem;color:var(--paper);line-height:1.6;font-style:italic;margin-top:10px;animation:fi .2s ease;}
+/* ACCUSATION */
+.notebook{background:rgba(240,232,216,.04);border:1px solid rgba(240,232,216,.08);padding:14px;margin-bottom:14px;}
+.nb-ttl{font-family:'Playfair Display',serif;font-size:.88rem;margin-bottom:8px;}
+.nb-e{font-size:.73rem;color:var(--mist);line-height:1.75;padding-left:9px;border-left:1px solid var(--gd);margin-bottom:4px;font-style:italic;}
+.nb-e::before{content:'— ';color:var(--gold);}
+.acc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px;margin-bottom:16px;}
+.acc-card{background:var(--dim);border:1px solid rgba(255,255,255,.07);padding:12px 8px;text-align:center;cursor:pointer;transition:all .2s;}
+.acc-card:hover{background:rgba(122,18,18,.15);border-color:var(--blood);transform:translateY(-2px);}
+.ac-av{font-size:1.5rem;margin-bottom:4px;}
+.ac-n{font-size:.8rem;}.ac-r{font-size:.6rem;color:var(--mist);margin-top:2px;}
+/* ENDING */
+.end-wrap{text-align:center;padding:44px 20px;}
+.end-ico{font-size:3.6rem;margin-bottom:16px;}
+.end-wrap h2{font-family:'Playfair Display',serif;font-size:2.1rem;margin-bottom:13px;}
+.end-wrap.good h2{color:var(--gold);}.end-wrap.bad h2{color:var(--red);}
+.end-wrap p{font-size:.84rem;color:var(--mist);line-height:1.85;max-width:500px;margin:0 auto 22px;}
+/* Good end: full screen fade-in */
+#s-end.fade-good{animation:end-fade-in 1.8s ease forwards;}
+@keyframes end-fade-in{from{opacity:0;background:#000}to{opacity:1;background:transparent}}
+/* Bad end: starts hidden, popup slides up */
+.bad-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:200;display:flex;align-items:flex-end;justify-content:center;pointer-events:none;}
+.bad-overlay.show{pointer-events:all;animation:overlay-darken .8s ease forwards;}
+@keyframes overlay-darken{to{background:rgba(0,0,0,.75)}}
+.bad-popup{background:#0d0608;border:1px solid rgba(192,57,43,.35);border-top:3px solid var(--red);padding:36px 28px;width:100%;max-width:600px;transform:translateY(100%);border-radius:2px 2px 0 0;}
+.bad-overlay.show .bad-popup{animation:popup-slide .6s cubic-bezier(.16,1,.3,1) .5s forwards;}
+@keyframes popup-slide{to{transform:translateY(0)}}
+/* Confirmation modal */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center;animation:fi .2s ease;}
+.confirm-box{background:#0d0a0e;border:1px solid rgba(192,57,43,.4);border-top:3px solid var(--red);padding:28px 24px;max-width:400px;width:90%;text-align:center;}
+.confirm-box .cb-ico{font-size:2.2rem;margin-bottom:12px;}
+.confirm-box .cb-name{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--paper);margin-bottom:6px;}
+.confirm-box .cb-role{font-size:.7rem;color:var(--mist);letter-spacing:.15em;text-transform:uppercase;margin-bottom:16px;}
+.confirm-box .cb-q{font-size:.82rem;color:#d8c8b8;line-height:1.6;margin-bottom:20px;}
+.confirm-btns{display:flex;gap:10px;justify-content:center;}
+/* BUTTONS */
+.btn{display:inline-block;background:transparent;border:1px solid var(--gold);color:var(--gold);padding:8px 20px;cursor:pointer;font-family:'Courier Prime',monospace;font-size:.74rem;letter-spacing:.15em;text-transform:uppercase;transition:all .2s;}
+.btn:hover{background:var(--gold);color:var(--ink);}
+.btn-g{border-color:rgba(255,255,255,.16);color:var(--mist);padding:7px 14px;font-size:.67rem;}
+.btn-g:hover{background:rgba(255,255,255,.07);color:var(--paper);}
+.btn-d{border-color:var(--blood);color:var(--red);}
+.btn-d:hover{background:var(--blood);color:var(--paper);}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center;}
+.div-sep{display:flex;align-items:center;gap:9px;margin:14px 0;opacity:.2;}
+.div-sep::before,.div-sep::after{content:'';flex:1;height:1px;background:var(--gold);}
+.div-sep span{font-size:.6rem;color:var(--gold);}
+.cdown{background:rgba(122,18,18,.1);border:1px solid rgba(192,57,43,.18);padding:8px 13px;font-size:.71rem;color:#e8c0c0;text-align:center;margin-bottom:13px;}
+.cdown strong{color:var(--red);}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:var(--ink);}::-webkit-scrollbar-thumb{background:var(--gd);border-radius:2px;}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="drop" style="left:10%;animation-delay:0s"></div>
+<div class="drop" style="left:36%;animation-delay:3.5s"></div>
+<div class="drop" style="left:66%;animation-delay:7s"></div>
+<div class="drop" style="left:88%;animation-delay:1.8s"></div>
+
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-eye">Enquête criminelle en haute mer</div>
+    <div class="hdr-h1">Sang<em>sur Mer</em></div>
+    <div class="hdr-sub">Marseille → Punta Cana &nbsp;·&nbsp; 5 jours &nbsp;·&nbsp; 3 meurtres &nbsp;·&nbsp; 4 incidents</div>
+  </div>
+
+  <!-- INTRO -->
+  <div id="s-intro" class="scr on">
+    <p class="intro-body">À bord du <strong>MS Théodora</strong>, la Méditerranée cède la place aux Caraïbes.<br>
+    Dix passagers. Cinq jours. Et quelqu'un à bord qui n'a pas l'intention d'arriver.<br><br>
+    <strong>Explorez le bateau, interrogez les suspects, trouvez le tueur.</strong></p>
+    <div class="how">
+      <div class="how-c"><span class="ic">📅</span><b>5 Jours</b><small>Le temps avance, les meurtres aussi</small></div>
+      <div class="how-c"><span class="ic">🗺️</span><b>Explorer</b><small>9 pièces à parcourir</small></div>
+      <div class="how-c"><span class="ic">💬</span><b>Interroger</b><small>10 suspects à questionner</small></div>
+      <div class="how-c"><span class="ic">🔍</span><b>Indices</b><small>16 preuves à collecter</small></div>
+      <div class="how-c"><span class="ic">⚖️</span><b>Accuser</b><small>Un seul coupable</small></div>
+    </div>
+    <div style="text-align:center"><button class="btn" id="btn-start">▶ &nbsp;Embarquer</button></div>
+  </div>
+
+  <!-- GAME -->
+  <div id="s-game" class="scr">
+    <nav class="day-nav" id="day-nav"></nav>
+    <div style="padding-top:14px">
+      <div class="stats-bar" id="stats-bar"></div>
+      <div id="view"></div>
+    </div>
+  </div>
+
+  <!-- ENDING -->
+  <div id="s-end" class="scr"><div id="end-content"></div></div>
+
+  <!-- CONFIRMATION MODAL (accusation) -->
+  <div id="confirm-overlay" style="display:none"></div>
+
+  <!-- BAD END OVERLAY (popup) -->
+  <div id="bad-overlay" class="bad-overlay" style="display:none">
+    <div class="bad-popup" id="bad-popup"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════
+
+const DAYS = [
+  { id:1, label:"Jour 1", title:"Départ de Marseille",
+    sub:"La Méditerranée est calme. Le MS Théodora largue les amarres.",
+    incidents:[
+      { id:"ev_d1_1", type:"minor",
+        label:"Nuit du Jour 1", title:"Le Couteau Manquant",
+        body:"<p>21h30. Julien remarque qu'un couteau de chef a disparu du rack cuisine. Clara hausse les épaules. Personne ne s'inquiète vraiment.</p><p>Mais dans la poubelle du couloir B, quelqu'un a glissé un mot : <em>« Il sait. Il doit être réduit au silence avant Gibraltar. »</em></p>"
+      }
+    ]
+  },
+  { id:2, label:"Jour 2", title:"Sang dans la Cabine 14",
+    sub:"Côtes espagnoles. Le premier meurtre déchire le silence de la nuit.",
+    incidents:[
+      { id:"ev_d2_1", type:"murder",
+        label:"2h17 du matin — Cabine 14", title:"MEURTRE #1 — Romuald Fabre",
+        body:"<p>Clara découvre Romuald Fabre, 52 ans, homme d'affaires marseillais, gisant sur le sol — une plaie profonde dans le flanc. L'arme n'a pas été retrouvée. La serrure montre des marques de crochetage.</p><p>Le médecin de bord estime le décès entre minuit et 2h. Fabre était lié à un contentieux financier impliquant au moins un autre passager.</p>"
+      },
+      { id:"ev_d2_2", type:"minor",
+        label:"Matin du Jour 2", title:"Sabotage de la Radio",
+        body:"<p>8h00. Marc découvre l'émetteur radio principal hors service — trois fils sectionnés proprement. Ce n'est pas une panne.</p><p>Impossible de contacter les garde-côtes. Quelqu'un à bord ne voulait pas qu'on appelle au secours.</p>"
+      }
+    ]
+  },
+  { id:3, label:"Jour 3", title:"La Disparition et les Machines",
+    sub:"Détroit de Gibraltar. Clara disparaît pendant 6 heures. Puis Ingrid.",
+    incidents:[
+      { id:"ev_d3_1", type:"minor",
+        label:"Matin du Jour 3", title:"Disparition de Clara",
+        body:"<p>11h00. Clara ne se présente pas à sa rotation. On la retrouve 6 heures plus tard enfermée dans le local de stockage du pont D — hagarde, vêtements déchirés. Elle répète : <em>« Il m'a vue. Il sait que je l'ai vu. »</em></p><p>Sur sa main gauche, une égratignure fraîche en forme de griffe.</p>"
+      },
+      { id:"ev_d3_2", type:"murder",
+        label:"23h45 — Salle des Machines", title:"MEURTRE #2 — Ingrid Larsson",
+        body:"<p>Marc découvre Ingrid Larsson, mécanicienne de nuit, inconsciente derrière un bloc moteur — tempe fracturée. Elle décède à 00h20 malgré les tentatives du médecin.</p><p>La clé à molette utilisée a été retrouvée dissimulée derrière un tuyau. Ingrid avait confié à Lucas deux jours plus tôt : <em>« J'ai remarqué quelqu'un qui ne devrait pas être là. »</em></p>"
+      }
+    ]
+  },
+  { id:4, label:"Jour 4", title:"Le Poison et la Troisième Mort",
+    sub:"Atlantique. Le tueur devient audacieux. Puis fatal.",
+    incidents:[
+      { id:"ev_d4_1", type:"minor",
+        label:"Midi du Jour 4", title:"Tentative d'Empoisonnement",
+        body:"<p>Lucas s'effondre après avoir goûté un plat — nausées violentes, tremblements. Le médecin diagnostique une intoxication à l'aconitine. Un flacon brun sans étiquette est retrouvé dans le fond d'une casserole.</p><p>Lucas était le seul à goûter avant service. Il avait vu une silhouette dans le couloir B. Il devenait gênant.</p>"
+      },
+      { id:"ev_d4_2", type:"murder",
+        label:"2h30 du matin — Couloir B", title:"MEURTRE #3 — Driss Aouad",
+        body:"<p>Driss Aouad, capitaine-adjoint, retrouvé étranglé dans le couloir B — à un mètre de la cabine du Voyageur Inconnu. Une tache de sang effacée est révélée aux UV.</p><p>Driss avait voulu vérifier l'identité d'un passager dont les papiers semblaient falsifiés. Roche lui avait dit d'attendre. Driss n'a pas attendu.</p>"
+      }
+    ]
+  },
+  { id:5, label:"Jour 5", title:"Punta Cana en Vue",
+    sub:"Les Caraïbes à l'horizon. Dernière chance avant le débarquement.",
+    incidents:[]
+  }
+];
+
+// Suspects présents par pièce et par jour
+// L'Inconnu n'est JAMAIS sur les lieux du crime. Clara et Chapeau sont sur-présents — fausses pistes.
+const LOCATIONS = {
+  julien:  { cuisine:[1,2,3,4,5] },
+  clara:   { couloir:[1,2,3,4,5], cabine:[1,2,3], salon:[3] },
+  marc:    { machines:[1,2,3,4,5], radio:[2,3] },
+  kev:     { pont:[1,2,3,4,5] },
+  sophie:  { salon:[1,2,3], cabine:[4,5] },
+  chapeau: { pont:[1], salon:[2,3], passerelle:[1,2,3,4,5], couloir:[4,5] },
+  lucas:   { restaurant:[1,2,3,5], cuisine:[4] },
+  roche:   { passerelle:[1,2,3,4,5] },
+  emma:    { pont:[1,2], restaurant:[3,4,5] },
+  inconnu: { salon:[1], pont:[2], restaurant:[3], passerelle:[4], cabine:[5] }
+};
+
+function suspectsInRoom(roomId, day) {
+  return Object.entries(LOCATIONS)
+    .filter(([id, locs]) => locs[roomId] && locs[roomId].includes(day))
+    .map(([id]) => SUSPECTS.find(s => s.id === id))
+    .filter(Boolean);
+}
+
+const ROOMS = [
+  { id:"cabine", name:"Cabines", icon:"🛏️",
+    desc:{
+      1:"Le couloir des cabines est calme. Les passagers viennent de s'installer pour la première nuit.",
+      2:"La porte de la cabine 14 est sous scellés depuis ce matin. Une odeur de renfermé persiste.",
+      3:"Le couloir est désert depuis le meurtre. Personne ne s'attarde ici.",
+      4:"Sophie s'est barricadée dans sa cabine. Elle ne sort presque plus.",
+      5:"Les passagers préparent leurs bagages en silence pour l'arrivée."
+    },
+    crime_day:2,
+    clues:[
+      { id:"c1", day:2, text:"Serrure de la cabine 14 forcée — marques de crochet côté intérieur." },
+      { id:"c2", day:2, text:"Montre de Fabre brisée à 0h43 — heure probable du meurtre." },
+      { id:"c3", day:2, text:"Sous le matelas de Fabre : un contrat signé, un nom partiellement effacé." }
+    ]
+  },
+  { id:"cuisine", name:"Cuisine", icon:"🍳",
+    desc:{
+      1:"Chaleur, marmites, odeur de lasagnes. Un espace vide dans le rack à couteaux depuis ce soir.",
+      2:"Julien s'affaire nerveusement. Ses mains tremblent légèrement.",
+      3:"Le couteau manquant n'a toujours pas été retrouvé. Julien évite le sujet.",
+      4:"Lucas est allongé en repos après l'empoisonnement. Julien est blême.",
+      5:"Julien nettoie en silence. Il n'a pas grand-chose à dire aujourd'hui."
+    },
+    crime_day:0,
+    clues:[
+      { id:"c4", day:1, text:"Couteau de chef manquant (Wüsthof 26cm) — rack cuisine, position 3." },
+      { id:"c5", day:1, text:"Traces de semelles boueuses près de la sortie de secours de la cuisine." },
+      { id:"c6", day:4, text:"Flacon brun sans étiquette dans casserole N°3 — aconitine probable." }
+    ]
+  },
+  { id:"machines", name:"Salle des Machines", icon:"⚙️",
+    desc:{
+      1:"Grondement sourd et perpétuel. Marc inspecte les moteurs. On pourrait crier ici sans être entendu.",
+      2:"Marc a découvert le sabotage radio ce matin. Il est sur les nerfs.",
+      3:"Une lampe éclaire encore l'endroit où Ingrid a été retrouvée. Marc a l'air épuisé.",
+      4:"La salle est sous surveillance depuis le second meurtre.",
+      5:"Les moteurs tournent normalement. Marc compte les heures."
+    },
+    crime_day:3,
+    clues:[
+      { id:"c7", day:3, text:"Clé à molette tachée — empreintes partielles, dissimulée derrière un tuyau." },
+      { id:"c8", day:3, text:"Ticket de passage au faux prénom « Thomas » dans l'établi d'Ingrid." }
+    ]
+  },
+  { id:"restaurant", name:"Restaurant", icon:"🥂",
+    desc:{
+      1:"Tables dressées, lumières tamisées. Lucas sillonne la salle. Un billet plié traîne sous une serviette.",
+      2:"Les convives parlent à voix basse depuis le meurtre.",
+      3:"Lucas semble préoccupé. Il regarde souvent vers le couloir B.",
+      4:"Lucas est absent — il se remet de l'empoisonnement. Emma le remplace.",
+      5:"Dernier dîner à bord. L'ambiance est lourde."
+    },
+    crime_day:0,
+    clues:[
+      { id:"c9",  day:1, text:"Billet anonyme : « Il sait. Il doit être réduit au silence avant Gibraltar. »" },
+      { id:"c10", day:3, text:"Lucas a vu une silhouette courir dans le couloir B après minuit — il ose en parler." }
+    ]
+  },
+  { id:"pont", name:"Pont Supérieur", icon:"🌊",
+    desc:{
+      1:"Le vent marin fouette le visage. Kev fixe son téléphone. Emma filme. L'homme au chapeau observe.",
+      2:"Quelques passagers prennent l'air malgré les événements. Le ciel est gris.",
+      3:"Le pont est presque désert. Les gens ont peur de se retrouver seuls.",
+      4:"Kev est toujours là. C'est le seul endroit où il se sent en sécurité.",
+      5:"Les côtes des Caraïbes apparaissent à l'horizon."
+    },
+    crime_day:0,
+    clues:[]
+  },
+  { id:"passerelle", name:"Passerelle", icon:"🧭",
+    desc:{
+      1:"Le Capitaine Roche tient la barre. Un journal de bord est ouvert sur la table.",
+      2:"Roche est tendu. Il refuse de faire demi-tour malgré la radio hors service.",
+      3:"La page du journal correspondant à la nuit du premier meurtre est arrachée.",
+      4:"Roche est silencieux depuis la mort de Driss. L'homme au chapeau rôde par ici.",
+      5:"Roche coordonne l'arrivée à Punta Cana. Il évite votre regard."
+    },
+    crime_day:0,
+    clues:[
+      { id:"c11", day:2, text:"Page arrachée du journal de bord — nuit du premier meurtre, sans explication." },
+      { id:"c12", day:4, text:"Dossier de Driss : papiers d'identité suspects signalés au capitaine avant sa mort." }
+    ]
+  },
+  { id:"salon", name:"Salon", icon:"🛋️",
+    desc:{
+      1:"Fauteuils défraîchis, lumière jaunâtre. Sophie est assise seule dans un coin.",
+      2:"Sophie n'a presque pas dormi. Elle dit avoir entendu quelque chose cette nuit.",
+      3:"Sophie est encore là. Elle refuse de rester seule dans sa cabine.",
+      4:"Le salon est vide. Sophie s'est barricadée dans sa cabine.",
+      5:"Quelques passagers attendent l'arrivée ici, sans se parler."
+    },
+    crime_day:0,
+    clues:[]
+  },
+  { id:"couloir", name:"Couloir B", icon:"🚪",
+    desc:{
+      1:"Un couloir étroit et mal éclairé. Clara y passe avec son chariot. Rien d'inhabituel.",
+      2:"Clara évite ce couloir depuis hier. Elle ne dit pas pourquoi.",
+      3:"Le couloir est désert. Une porte claque dans le courant d'air.",
+      4:"Une tache sombre a été effacée sur le sol — les UV du médecin l'ont révélée.",
+      5:"Le couloir est sous surveillance. C'est ici que Driss a été retrouvé étranglé."
+    },
+    crime_day:4,
+    clues:[
+      { id:"c13", day:4, text:"Tache de sang effacée couloir B — révélée aux UV, à 1m de la cabine de l'Inconnu." },
+      { id:"c14", day:4, text:"Bouton de veste arraché près de Driss — tissu sombre, coupe étrangère." }
+    ]
+  },
+  { id:"radio", name:"Salle Radio", icon:"📡",
+    desc:{
+      1:"L'émetteur ronronne normalement. Rien d'anormal.",
+      2:"L'émetteur est hors service — trois fils sectionnés proprement cette nuit.",
+      3:"Personne n'a pu réparer la radio. Marc manque de pièces.",
+      4:"La radio reste muette. Le capitaine a renoncé.",
+      5:"Toujours hors service. Le bateau arrive sans avoir pu appeler."
+    },
+    crime_day:0,
+    clues:[
+      { id:"c15", day:2, text:"Fils sectionnés à la pince — travail précis, pas une rupture mécanique." },
+      { id:"c16", day:2, text:"Marc : « Quelqu'un connaît les systèmes électroniques mieux qu'un passager normal. »" }
+    ]
+  }
+];
+
+const SUSPECTS = [
+  { id:"julien", name:"Julien", role:"Cuisinier", emoji:"👨‍🍳",
+    days:{
+      1:{ alibi:"J'étais en cuisine toute la soirée, comme d'habitude.",
+          lines:["Un couteau manque ce soir. Je ne sais pas qui a pu prendre ça.",
+                 "Mes lasagnes sont parfaites. Les gens se plaignent toujours.",
+                 "Je sors parfois par la sortie de secours prendre l'air. Deux minutes max.",
+                 "Ce voyage se passe bien pour l'instant. Enfin… j'espère."],
+          resp:["Il frotte ses mains sur son tablier. Geste nerveux.",
+                "Il change de sujet un peu trop vite.",
+                "La sortie de secours donne sur le couloir B. Intéressant.",
+                "Il évite votre regard en disant ça."] },
+      2:{ alibi:"J'étais en cuisine toute la nuit. J'ai des commandes jusqu'à minuit.",
+          lines:["Un mort. Sur mon bateau. C'est… c'est horrible.",
+                 "Ce couteau disparu hier… j'y pense depuis ce matin.",
+                 "Je n'ai pas quitté la cuisine. Sauf peut-être deux minutes vers 23h.",
+                 "Fabre ? Je le connaissais de vue. Il ne mangeait pas grand-chose."],
+          resp:["Il dit ça d'une voix plate. Trop plate.",
+                "Ses yeux se fixent sur le rack vide.",
+                "Deux minutes. Le temps d'aller au couloir B et revenir.",
+                "Il ment. Fabre commandait chaque soir. Ils se parlaient."] },
+      3:{ alibi:"En cuisine. Toujours. Où voulez-vous que j'aille ?",
+          lines:["Clara a disparu ? Je savais qu'il se passait quelque chose.",
+                 "Deux morts maintenant. Ce bateau est maudit.",
+                 "Le couteau… il ne reviendra pas. Je le sens.",
+                 "Ingrid venait parfois chercher du café la nuit. Elle était sympa."],
+          resp:["Il semble sincèrement perturbé par la disparition de Clara.",
+                "Sa voix se casse légèrement sur 'maudit'.",
+                "Il regarde le rack vide avec une expression indéchiffrable.",
+                "Il parle d'Ingrid au passé depuis ce matin déjà."] },
+      4:{ alibi:"J'étais en cuisine. Ce n'est pas moi qui ai mis ce flacon.",
+          lines:["Ce flacon, je ne l'avais jamais vu. Je le jure.",
+                 "Lucas… je suis désolé pour lui. Vraiment.",
+                 "Quelqu'un est entré dans ma cuisine cette nuit. J'en suis sûr.",
+                 "Trois morts. Et on approche de Punta Cana. Ça va s'arrêter, non ?"],
+          resp:["Il blêmit. Ses mains tremblent légèrement.",
+                "Il semble sincère. Ou très bon acteur.",
+                "La cuisine n'est jamais fermée à clé. N'importe qui pouvait entrer.",
+                "Sa voix contient une légère note d'espoir — ou de soulagement ?"] },
+      5:{ alibi:"En cuisine. Dernier repas du voyage.",
+          lines:["Je suis soulagé qu'on arrive. Ce voyage a été un cauchemar.",
+                 "Vous allez trouver qui a fait ça, non ?",
+                 "Le couteau n'a jamais été retrouvé. Ça me ronge.",
+                 "Je ne referai jamais une croisière."],
+          resp:["Son soulagement semble authentique.",
+                "Il vous regarde avec une vraie inquiétude.",
+                "Il s'arrête. Réalise peut-être qu'il vient de souligner une absence de preuve.",
+                "Il enlève son tablier d'un geste définitif."] }
+    }
+  },
+  { id:"clara", name:"Clara", role:"Steward", emoji:"🧹",
+    days:{
+      1:{ alibi:"Je faisais mes rondes normalement. Rien d'anormal.",
+          lines:["Tout est normal sur ce bateau. Pour l'instant.",
+                 "Je n'aime pas trop traîner dans le couloir B le soir.",
+                 "Les passagers sont corrects. Sauf un qui ne répond jamais quand je frappe.",
+                 "Mon boulot c'est de nettoyer, pas de surveiller."],
+          resp:["Elle dit ça avec une légère hésitation sur 'pour l'instant'.",
+                "Pourquoi le couloir B en particulier ?",
+                "Elle s'arrête. Réalise qu'elle a trop dit.",
+                "Elle le dit un peu trop vite, comme une récitation."] },
+      2:{ alibi:"Je faisais ma ronde de nuit. C'est moi qui ai trouvé Fabre.",
+          lines:["La porte de la cabine 14 était entrouverte. J'aurais dû continuer.",
+                 "J'ai vu du sang. J'ai crié. Personne n'est venu tout de suite.",
+                 "Je n'ai rien vu d'autre. Juste la porte ouverte.",
+                 "Quelqu'un avait réglé la climatisation au maximum dans cette cabine."],
+          resp:["Ses mains se croisent et se décroisent sans arrêt.",
+                "Elle revit la scène. Ses yeux sont humides.",
+                "Elle insiste sur ce 'rien'. Trop.",
+                "Détail inattendu. Pourquoi mentionner ça ?"] },
+      3:{ alibi:"Je… je ne sais pas. On m'a retrouvée dans ce local. Six heures après.",
+          lines:["Je ne sais pas comment je me suis retrouvée là-dedans.",
+                 "J'ai des lacunes. Des heures entières que je ne me rappelle pas.",
+                 "Je ne dirai rien de plus. C'est trop dangereux.",
+                 "Cette égratignure — quelqu'un m'a agrippée. Dans le couloir."],
+          resp:["Six heures de trou. Ça ne ressemble pas à une simple peur.",
+                "Elle a les yeux dans le vide. Comme si elle cherchait dans ses propres souvenirs.",
+                "Elle refuse de regarder en direction du couloir B.",
+                "Elle montre sa main. L'égratignure est profonde, en arc de cercle."] },
+      4:{ alibi:"Dans ma cabine. Je ne sors plus. Je verrouille tout.",
+          lines:["J'ai vu quelqu'un cette nuit-là. Dans le couloir, juste avant de perdre connaissance.",
+                 "Je ne peux pas dire qui. Pas encore. J'ai besoin d'être sûre.",
+                 "Ce que je sais — c'est que cette personne avait des gants en cuir.",
+                 "Driss est mort parce qu'il cherchait la même vérité que moi."],
+          resp:["Elle dit ça avec précaution. Comme si chaque mot pouvait la condamner.",
+                "Elle regarde par-dessus votre épaule avant de parler.",
+                "Des gants en cuir. Comme le gant retrouvé sous le lit de Fabre.",
+                "Elle tremble légèrement. Pas de peur — de culpabilité de n'avoir rien dit."] },
+      5:{ alibi:"Dans ma cabine. Porte verrouillée, chaise sous la poignée.",
+          lines:["Dès qu'on accoste, je parle. A la police, pas à vous.",
+                 "La personne que j'ai vue portait une veste sombre à col montant.",
+                 "J'aurais dû parler le Jour 2. Ingrid serait peut-être encore là.",
+                 "Tout ce que j'ai vu, je l'ai noté. Pour ne pas oublier à nouveau."],
+          resp:["Elle dit ça avec une détermination nouvelle. Quelque chose a changé en elle.",
+                "Veste sombre, col montant. Ça corrobore la vidéo d'Emma.",
+                "Sa voix se brise sur 'Ingrid'. Elle y pense depuis le début.",
+                "Elle sort un carnet de sa poche. Pages serrées, écriture fébrile."] }
+    }
+  },
+  { id:"marc", name:"Marc", role:"Mécanicien", emoji:"🔧",
+    days:{
+      1:{ alibi:"Dans les machines. Mon poste, c'est là.",
+          lines:["Les moteurs tournent bien. C'est tout ce qui m'importe.",
+                 "Je ne me mêle pas des affaires des passagers.",
+                 "Quelqu'un a touché à mes outils ce soir. Je déteste ça.",
+                 "Le bruit des moteurs isole complètement. On n'entend rien d'autre."],
+          resp:["Il parle de ses moteurs comme d'autres parlent de leurs enfants.",
+                "Il dit ça avec une légère hostilité.",
+                "Il montre le rack. Un tournevis est mal rangé.",
+                "Il dit ça sans ciller. Comme s'il voulait s'en assurer lui-même."] },
+      2:{ alibi:"Dans les machines toute la nuit. Sauf tôt ce matin pour la radio.",
+          lines:["La radio a été sabotée. Trois fils. Du travail propre.",
+                 "Quelqu'un sait comment fonctionne ce bateau. Ce n'est pas un passager ordinaire.",
+                 "Fabre est mort la nuit dernière. Je n'étais pas là-haut.",
+                 "La clé à molette N°3 a bougé. Ce n'est pas moi."],
+          resp:["Il est furieux que quelqu'un ait touché à ses systèmes.",
+                "Il a raison. Ça demande une vraie connaissance technique.",
+                "Il le dit trop vite, trop clairement.",
+                "Il pointe vers l'établi. L'espace vide est visible."] },
+      3:{ alibi:"J'étais là quand c'est arrivé. J'étais juste de l'autre côté des machines.",
+          lines:["Ingrid. Elle travaillait bien. Elle ne méritait pas ça.",
+                 "J'ai rien entendu. Les moteurs couvrent tout. Je vous l'avais dit.",
+                 "La clé retrouvée derrière le tuyau — ce n'est pas la mienne. Elle est plus ancienne.",
+                 "Ingrid m'avait parlé d'un passager bizarre. Je lui avais dit de ne pas s'en mêler."],
+          resp:["Sa voix se brise. Il regardait Ingrid comme une collègue précieuse.",
+                "Il répète ça comme une excuse qu'il se fait à lui-même.",
+                "Intéressant. Il a regardé la clé de près.",
+                "Il baisse les yeux. Ce conseil lui pèse maintenant."] },
+      4:{ alibi:"Dans les machines. Sous surveillance depuis hier soir.",
+          lines:["Deux meurtres dans mes machines. Ma réputation est foutue.",
+                 "Le ticket avec le faux prénom — Ingrid l'avait trouvé par terre.",
+                 "Je n'ai pas empoisonné Lucas. Je n'avais aucune raison.",
+                 "Ce bateau devrait faire demi-tour. Roche est irresponsable."],
+          resp:["Il est à la fois épuisé et furieux.",
+                "Il savait pour ce ticket. Il ne l'avait pas mentionné avant.",
+                "Vrai ou faux — difficile à dire.",
+                "Sa colère contre Roche semble sincère et ancienne."] },
+      5:{ alibi:"Dans les machines. Comme toujours.",
+          lines:["On arrive enfin. Ces cinq jours ont été un enfer.",
+                 "J'espère que vous avez trouvé qui c'est.",
+                 "Le sabotage radio… ça m'obsède encore. Qui pouvait savoir ça ?",
+                 "Ingrid méritait mieux que cette fin."],
+          resp:["Il a des cernes profonds. Il n'a presque pas dormi.",
+                "Il vous regarde avec une attente sincère.",
+                "Il mâche cette question depuis le début.",
+                "Il dit ça doucement, les yeux dans le vague."] }
+    }
+  },
+  { id:"kev", name:"Kev", role:"Passager", emoji:"😶",
+    days:{
+      1:{ alibi:"Sur le pont. A regarder la mer. Et mon téléphone.",
+          lines:["J'irais bien manger une lasagne.",
+                 "C'est quand qu'on arrive ?",
+                 "Le wifi est nul ici. Vraiment nul.",
+                 "C'est grand un bateau. Je me perds tout le temps."],
+          resp:["Il dit ça avec une sincérité déconcertante.",
+                "Il compte vraiment les jours sur ses doigts.",
+                "Il montre son téléphone : zéro barre de réseau.",
+                "Il semble incapable de mémoriser le plan du navire."] },
+      2:{ alibi:"Sur le pont. J'ai rien vu, j'ai rien entendu.",
+          lines:["Y'a eu un mort ? Sérieux ?",
+                 "Pourquoi tout le monde est stressé ?",
+                 "Moi je suis sorti de ma cabine pour aller sur le pont. C'est tout.",
+                 "C'était qui Fabre déjà ? Le grand avec la veste ?"],
+          resp:["Il a l'air genuinement surpris. Pas de simulation décelable.",
+                "Son détachement est presque comique. Ou très calculé.",
+                "Il dit ça sans réaliser que ça ressemble à un alibi.",
+                "Il essaie de se souvenir. En vain."] },
+      3:{ alibi:"Pont supérieur. Toujours.",
+          lines:["Deux morts. Même là j'ai du mal à réaliser.",
+                 "Clara a disparu ? J'avais même pas remarqué.",
+                 "Vous avez pas l'heure ? Mon téléphone est à plat.",
+                 "Quelqu'un m'a dit qu'on passe près des Açores. C'est quoi les Açores ?"],
+          resp:["Son incompréhension semble totale et authentique.",
+                "Il n'observe vraiment rien autour de lui.",
+                "Il cherche dans ses poches. Trois téléphones déchargés.",
+                "Définitivement dans sa bulle."] },
+      4:{ alibi:"Pont. J'ai pas bougé de la journée.",
+          lines:["Lucas est tombé malade ? C'est lui le grand brun ?",
+                 "On arrive quand là, vraiment ?",
+                 "J'ai faim. La cuisine est fermée ?",
+                 "Y'a eu encore un mort cette nuit ? Wesh."],
+          resp:["Il confond Lucas avec quelqu'un d'autre.",
+                "Trois jours qu'il pose cette question.",
+                "Sa principale préoccupation semble sincèrement être son estomac.",
+                "Il dit 'wesh' avec un détachement absolu."] },
+      5:{ alibi:"Pont. À regarder les Caraïbes arriver.",
+          lines:["Enfin ! J'en pouvais plus de ce bateau.",
+                 "C'était quoi le problème au fait ? Y'a eu des morts ?",
+                 "Je rentre à Paris direct. J'ai raté trois épisodes de ma série.",
+                 "Bonne chance pour votre enquête ou whatever."],
+          resp:["Son soulagement est celui de quelqu'un qui n'a rien compris.",
+                "Trois meurtres. Il ne sait toujours pas.",
+                "Ses priorités sont clairement établies.",
+                "Il vous fait un petit signe de la main et repart."] }
+    }
+  },
+  { id:"sophie", name:"Sophie", role:"Passagère", emoji:"😰",
+    days:{
+      1:{ alibi:"Dans ma cabine ou au salon. Je n'arrive pas à dormir.",
+          lines:["Quelque chose ne va pas sur ce bateau. Je le sens.",
+                 "Vous avez remarqué l'homme au chapeau ? Il observe tout le monde.",
+                 "Je ne prends jamais de croisière d'habitude. Je regrette.",
+                 "Il y a un passager… le grand silencieux… qui me met mal à l'aise."],
+          resp:["Elle frissonne légèrement malgré la chaleur.",
+                "Bonne intuition. Ou coïncidence.",
+                "Elle serre son verre de thé un peu trop fort.",
+                "Elle baisse la voix. Regarde vers les cabines."] },
+      2:{ alibi:"Dans ma cabine. J'ai entendu quelque chose cette nuit.",
+          lines:["Un bruit sourd. Vers minuit et demi. Couloir B.",
+                 "Je veux rentrer à Marseille. Par avion, n'importe comment.",
+                 "Fabre… je l'avais vu parler avec le Voyageur Inconnu hier soir.",
+                 "Je fais confiance à personne ici. Personne."],
+          resp:["Elle a entendu quelque chose au moment du meurtre.",
+                "Sa peur est palpable et sincère.",
+                "Elle réalise que c'est important. Ses yeux s'écarquillent.",
+                "Elle vous inclut dans ce 'personne'. C'est noté."] },
+      3:{ alibi:"Au salon. Je ne voulais pas rester seule dans ma cabine.",
+          lines:["Clara a été enfermée de force. Quelqu'un lui a fait peur.",
+                 "Deux morts. Le bateau continue. C'est insensé.",
+                 "Cette nuit j'ai vu le Voyageur Inconnu se déplacer très tard.",
+                 "Je commence à penser que c'est lui. Le Voyageur."],
+          resp:["Elle a suivi les événements de très près.",
+                "Elle est au bord des larmes d'indignation.",
+                "Elle hésite. Puis : 'Vers les machines. Vers 23h.'",
+                "Elle le dit à voix basse, comme si murs avaient des oreilles."] },
+      4:{ alibi:"Barricadée dans ma cabine. Je n'ouvre plus ma porte la nuit.",
+          lines:["Driss voulait vérifier son identité. Et il est mort.",
+                 "Je l'ai vu. Le Voyageur. Hier soir, dans le couloir B. Vers 2h.",
+                 "Vous devez l'accuser. Avant qu'on arrive.",
+                 "J'ai bloqué ma porte avec une chaise. Toutes les nuits depuis le Jour 2."],
+          resp:["Elle relie les points avec une clarté que peu d'autres ont.",
+                "Ses yeux ne clignotent pas. Elle est sûre.",
+                "Elle pose ses mains à plat sur la table. Ferme.",
+                "La chaise est encore sous la poignée. Elle montre la photo sur son téléphone."] },
+      5:{ alibi:"Dans ma cabine. Enfin presque arrivée.",
+          lines:["C'est fini. On est arrivés. Enfin.",
+                 "Accusez-le maintenant. Avant qu'il disparaisse dans la foule.",
+                 "J'ai tout noté dans mon carnet depuis le Jour 2. Je peux vous le donner.",
+                 "Je ne monterai plus jamais sur un bateau."],
+          resp:["Elle a l'air épuisée mais soulagée.",
+                "Son urgence est réelle. Elle a peur qu'il s'échappe.",
+                "Elle sort un petit carnet couvert de notes serrées.",
+                "Elle le dit avec une conviction absolue."] }
+    }
+  },
+  { id:"chapeau", name:"L'Homme au Chapeau", role:"???", emoji:"🎩",
+    days:{
+      1:{ alibi:"Je suis là où je dois être. Ça suffit.",
+          lines:["Vous avez l'air de quelqu'un qui cherche quelque chose. Je me demande quoi.",
+                 "Ce bateau contient plus de secrets que de passagers.",
+                 "Des événements fâcheux sont à venir. Je le dis, c'est tout.",
+                 "Je voyage souvent. Les croisières révèlent les gens pour ce qu'ils sont."],
+          resp:["Il ne cligne pas des yeux pendant qu'il dit ça.",
+                "Il dit ça avec une assurance qui n'invite pas à la question.",
+                "Prophétie ? Avertissement ? Ou simple provocation ?",
+                "Il regarde chaque passager qui passe. Un par un. Longuement."] },
+      2:{ alibi:"J'étais là. Je ne dis pas où.",
+          lines:["Un mort. Je ne suis pas surpris.",
+                 "Vous cherchez un coupable. Faites attention à ne pas trouver le mauvais.",
+                 "Clara était dans le couloir B très tard hier soir. Vous le saviez ?",
+                 "Moi ? J'observe. C'est tout. Depuis le début."],
+          resp:["Il dit 'je ne suis pas surpris' sans expliquer pourquoi.",
+                "Il vous regarde comme si vous étiez déjà en train de vous tromper.",
+                "Clara dans le couloir B — la nuit du meurtre. Voilà qui est intéressant.",
+                "Il a un carnet dans la poche intérieure de sa veste. Épais."] },
+      3:{ alibi:"Dans l'ombre. Comme d'habitude.",
+          lines:["Clara a été enfermée. Ou s'est enfermée. C'est une nuance importante.",
+                 "Ingrid avait vu quelque chose. Et elle en parlait trop librement.",
+                 "Je connais ce type d'affaires. Plus qu'on ne le croit.",
+                 "Regardez le mauvais suspect suffisamment longtemps et il finit par sembler coupable."],
+          resp:["Il insiste sur 'ou s'est enfermée'. Laisse planer le doute.",
+                "Il sous-entend qu'Ingrid s'est mise en danger elle-même. Cynique.",
+                "'Ce type d'affaires.' Qu'est-ce qu'il a vu avant ce voyage ?",
+                "Il vous regarde droit dans les yeux. Comme un miroir."] },
+      4:{ alibi:"Là où personne ne m'a vu. Ou cru me voir.",
+          lines:["Trois morts. Le tueur est méthodique. Organisé. Pas impulsif.",
+                 "Clara a quelque chose à dire qu'elle ne dit pas encore. Méfiez-vous de ses silences.",
+                 "Un faux prénom, une vraie violence. La combinaison classique.",
+                 "Je vous laisse réfléchir. Vous avez presque tout. Presque."],
+          resp:["Sa description du tueur est précise. Trop pour être de la pure spéculation.",
+                "Il pointe sur Clara. Encore. C'est sa troisième allusion en deux jours.",
+                "Il ne dit pas de qui il parle. Il vous laisse combler les blancs.",
+                "Il se lève. Disparaît dans le couloir sans faire de bruit."] },
+      5:{ alibi:"Je repars comme je suis venu.",
+          lines:["Vous avez collecté assez d'indices. La question c'est : les avez-vous bien lus ?",
+                 "Clara n'est pas celle qu'elle prétend être. Creusez son passé à Marseille.",
+                 "Le vrai coupable, c'est celui qui avait tout à perdre. Cherchez le mobile.",
+                 "Bonne chance. Vous en aurez besoin, quoi que vous pensiez avoir compris."],
+          resp:["Il dit ça avec une étrange sérénité — comme si l'issue lui était égale.",
+                "Nouveau point sur Clara. Il insiste, encore et encore.",
+                "Mobile, moyen, opportunité. Il raisonne comme quelqu'un qui connaît le sujet.",
+                "Il baisse son chapeau. Et sort. On ne le reverra plus."] }
+    }
+  },
+  { id:"lucas", name:"Lucas", role:"Serveur", emoji:"🍽️",
+    days:{
+      1:{ alibi:"En service au restaurant jusqu'à minuit.",
+          lines:["Le restaurant était plein ce soir. Bonne ambiance.",
+                 "Je dois rester discret. C'est mon travail.",
+                 "J'ai servi Fabre ce soir. Il semblait préoccupé.",
+                 "J'ai cru voir quelqu'un rôder près du couloir B. Tard."],
+          resp:["Il parle avec la fluidité d'un professionnel du service.",
+                "Il le dit avec une vraie conviction professionnelle.",
+                "Il s'arrête. Réalise que c'est peut-être important.",
+                "Il hésite. 'Vers 23h30. Une silhouette sombre.'"] },
+      2:{ alibi:"En service jusqu'à minuit, puis dans ma chambre.",
+          lines:["Fabre est mort. Je l'avais servi hier soir. C'est bizarre.",
+                 "J'ai vu quelqu'un courir dans le couloir B cette nuit. Vers 1h du matin.",
+                 "Je ne peux pas décrire la silhouette. Il faisait trop sombre.",
+                 "Je dois rester discret. Je ne veux pas d'ennuis."],
+          resp:["Il triture sa serviette. Nerveusement.",
+                "Il le dit à voix basse. Regarde autour de lui.",
+                "Il semble sincère sur l'impossibilité d'identifier.",
+                "Sa discrétion professionnelle devient une obstruction."] },
+      3:{ alibi:"En service le soir. J'ai tout vu de la salle.",
+          lines:["Ingrid m'avait dit quelque chose, il y a deux jours.",
+                 "Elle m'a dit : 'J'ai vu quelqu'un qui ne devrait pas être là.'",
+                 "La silhouette dans le couloir B — je pense que c'était le Voyageur Inconnu.",
+                 "Je commence à avoir peur. Pour moi."],
+          resp:["Il réalise maintenant le poids de cette confidence.",
+                "Il répète ses mots exacts. Il les a retenus.",
+                "Il dit ça lentement, comme s'il le comprenait en le disant.",
+                "Sa peur est nouvelle. Et fondée."] },
+      4:{ alibi:"À l'infirmerie. Quelqu'un a essayé de me tuer.",
+          lines:["Le flacon dans la casserole. C'était pour moi.",
+                 "Je goûte toujours avant le service. Tout le monde le sait à bord.",
+                 "C'est parce que j'ai vu la silhouette. Il voulait me faire taire.",
+                 "J'aurais dû parler plus tôt. Driss serait peut-être encore là."],
+          resp:["Il est pâle. Encore faible mais lucide.",
+                "Il dit ça avec une amertume résignée.",
+                "Il relie lui-même les points. Ce n'est pas une déduction : c'est une certitude.",
+                "La culpabilité dans ses yeux est réelle et douloureuse."] },
+      5:{ alibi:"Convalescent. Mais debout.",
+          lines:["Je vais bien. Mieux en tout cas.",
+                 "Accusez-le. C'est le Voyageur. Je l'ai vu. J'en suis sûr maintenant.",
+                 "Après Punta Cana, je change de métier.",
+                 "Dites-moi juste qu'il ne s'en sortira pas."],
+          resp:["Il a bonne mine mais les yeux encore fragiles.",
+                "Sa conviction est totale. Il a eu le temps de réfléchir.",
+                "Il dit ça à moitié sérieux, à moitié pas.",
+                "Il a besoin de savoir que ça valait quelque chose."] }
+    }
+  },
+  { id:"roche", name:"Capitaine Roche", role:"Capitaine", emoji:"⚓",
+    days:{
+      1:{ alibi:"Sur la passerelle. Je surveille tout.",
+          lines:["Bienvenue à bord du MS Théodora. Tout est sous contrôle.",
+                 "Personne ne quitte ce navire sans mon autorisation.",
+                 "Mes équipages sont triés sur le volet. Aucun incident possible.",
+                 "Si vous avez un problème, voyez le personnel. C'est pour ça qu'ils sont là."],
+          resp:["Il dit ça avec l'assurance d'un homme qui n'a encore jamais eu tort.",
+                "Il dit ça d'un ton qui n'admet aucune réplique.",
+                "Cette certitude va s'effriter dans les prochains jours.",
+                "Il regarde déjà vers l'horizon. La conversation est close."] },
+      2:{ alibi:"Sur la passerelle. J'ai été prévenu du meurtre à 3h du matin.",
+          lines:["Un incident est survenu. Il est sous contrôle.",
+                 "Nous maintenons le cap. Faire demi-tour serait dangereux.",
+                 "La radio… une panne technique. Nos ingénieurs s'en occupent.",
+                 "Je ne peux pas vous dire ce que je sais. Enquête en cours."],
+          resp:["'Incident'. Il refuse de dire 'meurtre'.",
+                "Dangereux. Ou pratique pour quelqu'un qui veut continuer.",
+                "Ce n'est pas une panne. Il le sait. Il ment.",
+                "Il sait quelque chose. Et il le garde pour lui."] },
+      3:{ alibi:"Sur la passerelle. Je n'en bouge pas.",
+          lines:["Deux morts. Je prends la pleine responsabilité.",
+                 "Clara a été retrouvée. Elle ne parlera pas pour l'instant.",
+                 "J'ai arraché une page de mon journal. Par erreur. Ce n'est rien.",
+                 "Driss voulait vérifier l'identité d'un passager. Je lui ai dit d'attendre."],
+          resp:["Il dit ça avec la rigidité d'un homme qui ne sait pas plier.",
+                "Comment sait-il qu'elle ne parlera pas ?",
+                "Il dit ça d'une traite, trop vite. C'est quelque chose.",
+                "Il regrette déjà. Ça se voit dans ses épaules."] },
+      4:{ alibi:"Sur la passerelle. Driss me manque déjà.",
+          lines:["Driss est mort parce que je lui ai dit d'attendre. C'est ma faute.",
+                 "J'ai son dossier. Le passager qui s'appelle Thomas. Les papiers sont faux.",
+                 "Je n'ai pas sabré la radio moi-même. Mais je savais pour le sabotage.",
+                 "Dès qu'on accoste, je remets tout aux autorités."],
+          resp:["Il dit ça avec une voix creuse. Il ne l'a pas encore digéré.",
+                "Il pose le dossier sur la table. Le fait glisser vers vous.",
+                "Ça, c'est une confession partielle et massive.",
+                "Promesse sincère. Ou tentative de se dédouaner."] },
+      5:{ alibi:"Sur la passerelle. Coordination de l'arrivée.",
+          lines:["Les autorités portuaires sont préveues. Ils montent à bord à l'accostage.",
+                 "Si vous avez un suspect, dites-le moi maintenant.",
+                 "Je n'aurais pas dû couvrir le sabotage radio. C'était une erreur.",
+                 "Après ça, je prends ma retraite."],
+          resp:["Il coordonne l'arrivée avec une précision mécanique.",
+                "Il vous regarde droit dans les yeux pour la première fois depuis des jours.",
+                "Il l'admet enfin. Trop tard, mais il l'admet.",
+                "Il le dit sans emphase. C'est décidé."] }
+    }
+  },
+  { id:"emma", name:"Emma", role:"Influenceuse", emoji:"📱",
+    days:{
+      1:{ alibi:"Sur le pont et dans ma cabine. Je filmais tout.",
+          lines:["OMG ce bateau est trop incroyable, j'adore !",
+                 "Vous pouvez pas passer devant ma caméra là, merci.",
+                 "J'ai fait 40k vues avec mon départ de Marseille. Record.",
+                 "C'est qui le mystérieux en cabine 12 ? Il est chelou."],
+          resp:["Elle filme votre réaction en même temps.",
+                "Elle dit ça sans ironie aucune.",
+                "Elle montre les stats sur son téléphone. Effectivement.",
+                "Elle pointe vers la cabine du Voyageur Inconnu sans le savoir."] },
+      2:{ alibi:"Je filmais depuis le pont. Toute la nuit presque.",
+          lines:["Un meurtre ? C'est dingue. C'est mauvais pour mon image.",
+                 "Attendez — un vrai meurtre ? Genre comme dans les films ?",
+                 "J'ai filmé cette nuit depuis le pont. Peut-être qu'il y a quelque chose.",
+                 "J'ai croisé quelqu'un dans le couloir B vers 1h. Il m'a pas vue."],
+          resp:["Sa première réaction est pour son feed. Révélateur.",
+                "La réalité la rattrape progressivement.",
+                "Elle vérifie ses rushs. Cherche dans sa galerie.",
+                "Elle dit ça comme une anecdote. Ce n'en est pas une."] },
+      3:{ alibi:"Au restaurant et dans ma cabine. J'ai des stories à poster.",
+          lines:["Clara a disparu ? J'avais même pas fait le lien avec hier.",
+                 "J'ai regardé mes vidéos de la nuit d'avant. Y'a une silhouette dans le couloir.",
+                 "C'est flou mais… c'est quelqu'un de grand, en veste sombre.",
+                 "Je vais poster une story 'enquête à bord'. Ça va exploser."],
+          resp:["Elle vit les événements comme du contenu.",
+                "Elle vous montre la vidéo. Silhouette visible, 1h04 du matin.",
+                "Grand, veste sombre. Ça correspond au Voyageur Inconnu.",
+                "Vous la regardez. Elle reconsidère. 'Ou pas. C'est peut-être pas le moment.'"] },
+      4:{ alibi:"Au restaurant, j'ai remplacé Lucas. Et dans ma cabine.",
+          lines:["Lucas s'est fait empoisonner. C'est dingue. Vraiment dingue.",
+                 "La vidéo que j'ai — j'aurais dû la montrer avant.",
+                 "J'ai peur maintenant. Vraiment. Ce n'est plus du contenu.",
+                 "J'ai vu le Voyageur Inconnu regarder Lucas travailler. Plusieurs fois."],
+          resp:["Sa légèreté des premiers jours a disparu.",
+                "Un vrai regret. Elle réalise ce que ça valait.",
+                "Sa voix change. Quelque chose s'est fissuré.",
+                "Elle fronce les sourcils. 'Comme s'il cherchait quelque chose.'"] },
+      5:{ alibi:"Dans ma cabine. J'ai plus trop envie de filmer.",
+          lines:["Je vais tout donner à la police. Les vidéos, tout.",
+                 "J'aurais dû prendre ça au sérieux depuis le début.",
+                 "La silhouette dans ma vidéo, c'est lui. J'en suis sûre.",
+                 "Cette croisière, je la posterai jamais. Jamais."],
+          resp:["Une vraie décision. Elle est sérieuse.",
+                "Elle dit ça avec une maturité qu'on ne lui connaissait pas.",
+                "Elle vous montre la vidéo une dernière fois. La silhouette est reconnaissable.",
+                "Elle range son téléphone dans sa poche. Et le laisse là."] }
+    }
+  },
+  { id:"inconnu", name:"Voyageur Inconnu", role:"Passager solitaire", emoji:"🕵️",
+    days:{
+      1:{ alibi:"Dans ma cabine, ou au salon. Je lisais.",
+          lines:["Je voyage seul. C'est plus simple.",
+                 "Ce bateau est confortable. C'est tout ce que je demande.",
+                 "Je m'appelle Thomas. Vous avez besoin d'autre chose ?",
+                 "Je ne suis pas très sociable. Ce n'est pas un crime."],
+          resp:["Il dit ça poliment. Rien d'alarmant au premier abord.",
+                "Une réponse banale. Il y en aura d'autres.",
+                "Il prononce son prénom sans hésiter. Trop naturellement ?",
+                "Il sourit légèrement. Retourne à ses affaires."] },
+      2:{ alibi:"Au pont, puis dans ma cabine. Je dormais tôt.",
+          lines:["Un mort. C'est triste. Ce genre de chose arrive.",
+                 "Je ne connaissais pas cet homme. Je ne parle pas aux autres passagers.",
+                 "Je lisais. Je ne sors pas la nuit d'habitude.",
+                 "Vous enquêtez ? Bonne chance. Ces choses sont rarement simples."],
+          resp:["'Ce genre de chose arrive.' Réponse froide mais pas nécessairement suspecte.",
+                "Il dit ça calmement. Aucun signe de nervosité visible.",
+                "'D'habitude.' Réserve une exception possible.",
+                "Il dit ça avec ce qui ressemble à une vraie curiosité intellectuelle."] },
+      3:{ alibi:"Au restaurant, seul. Puis dans ma cabine.",
+          lines:["Clara ? Je ne la connais pas bien. Je la croise dans les couloirs.",
+                 "Je n'ai rien vu de particulier cette nuit.",
+                 "Deux morts maintenant. C'est… inhabituel pour une croisière.",
+                 "Je préfère rester discret. Ça évite les complications."],
+          resp:["Il parle de Clara comme d'une étrangère. Peut-être trop.",
+                "Il dit ça sans gêne. Regard stable.",
+                "Il choisit 'inhabituel'. Pas 'horrible', pas 'choquant'. Intéressant.",
+                "Discret. Le mot revient. Et les complications — lesquelles ?"] },
+      4:{ alibi:"Dans ma cabine. Toute la nuit.",
+          lines:["Driss voulait voir mes papiers. J'ai refusé. C'est mon droit.",
+                 "Je ne m'appelle pas Thomas. Ça ne fait pas de moi un coupable.",
+                 "Tout le monde me regarde. C'est inconfortable.",
+                 "Je serai à Punta Cana demain. C'est tout ce qui m'importe."],
+          resp:["Il dit 'c'est mon droit' avec une précision légale froide.",
+                "Il admet le faux nom. Sans explication.",
+                "Il dit 'commode' — comme si c'était une coïncidence orchestrée.",
+                "'Comme prévu.' Ces deux mots pèsent une tonne."] },
+      5:{ alibi:"Dans ma cabine. Je prépare mes affaires.",
+          lines:["Vous n'avez aucune preuve. Juste des suppositions.",
+                 "Je débarque avec tout le monde. Vous ne pouvez pas m'en empêcher.",
+                 "Prouvez-le.",
+                 "J'ai fait ce que j'avais à faire. C'est tout ce que je dirai."],
+          resp:["Il dit ça avec une certitude qui ressemble à un défi.",
+                "Il a raison légalement. Il faut agir maintenant.",
+                "Un long silence avant et après ce mot.",
+                "C'est la première fois qu'il dit quelque chose de vrai."] }
+    }
+  }
+];
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let ST = {
+  day: 1,
+  maxDay: 1,
+  cluesFound: new Set(),
+  talked: new Set(),
+  incRead: new Set(),
+  // navigation stack: what to render when going back
+  backTo: null
+};
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
+function el(tag, cls, html) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html !== undefined) e.innerHTML = html;
+  return e;
+}
+function showScr(id) {
+  document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
+  document.getElementById('s-'+id).classList.add('on');
+}
+function setView(node) {
+  const v = document.getElementById('view');
+  v.innerHTML = '';
+  v.appendChild(node);
+  window.scrollTo(0,0);
+}
+function updateStats() {
+  const murders = DAYS.reduce((n,d)=>n+d.incidents.filter(i=>i.type==='murder'&&ST.incRead.has(i.id)).length,0);
+  const minors  = DAYS.reduce((n,d)=>n+d.incidents.filter(i=>i.type==='minor' &&ST.incRead.has(i.id)).length,0);
+  const sb = document.getElementById('stats-bar');
+  if (!sb) return;
+  sb.innerHTML =
+    `<div class="stat">Jour <strong>${ST.day}/5</strong></div>
+     <div class="stat">Meurtres <strong>${murders}/3</strong></div>
+     <div class="stat">Incidents <strong>${minors}/4</strong></div>
+     <div class="stat">Interrogés <strong>${ST.talked.size}/10</strong></div>
+     <div class="stat">Indices <strong>${ST.cluesFound.size}/16</strong></div>`;
+}
+function buildNav() {
+  const nav = document.getElementById('day-nav');
+  nav.innerHTML = '';
+  DAYS.forEach(d => {
+    const locked = d.id > ST.maxDay;
+    const btn = el('button','dtab'+(d.id===ST.day?' act':'')+(locked?' locked':''));
+    btn.id = 'dtab-'+d.id;
+    let pips = '';
+    if (d.incidents.some(i=>i.type==='murder')) pips += '<span class="dpip m"></span>';
+    if (d.incidents.some(i=>i.type==='minor'))  pips += '<span class="dpip i"></span>';
+    btn.innerHTML = d.label + pips;
+    if (!locked) btn.addEventListener('click', () => renderDay(d.id));
+    nav.appendChild(btn);
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER: DAY
+// ═══════════════════════════════════════════════════
+function renderDay(dayId) {
+  ST.day = dayId;
+  showScr('game');
+  buildNav();
+  updateStats();
+
+  const day = DAYS.find(d=>d.id===dayId);
+  const frag = document.createDocumentFragment();
+
+  // Day header
+  const hdr = el('div','day-hdr');
+  hdr.appendChild(el('div','day-lbl','Jour '+day.id+' sur 5'));
+  hdr.appendChild(el('div','day-ttl',day.title));
+  hdr.appendChild(el('div','day-sub',day.sub));
+  frag.appendChild(hdr);
+
+  // Incidents
+  if (day.incidents.length > 0) {
+    day.incidents.forEach(inc => {
+      const done = ST.incRead.has(inc.id);
+      const card = el('div','inc '+(inc.type==='murder'?'murder':'minor')+(done?' done':''));
+      card.appendChild(el('div','inc-lbl '+(inc.type==='murder'?'m':'i'), inc.type==='murder'?'🩸 Incident Majeur':'⚠️ Incident Mineur'));
+      card.appendChild(el('div','inc-ttl',inc.title));
+      card.appendChild(el('div','inc-sub',inc.label+' — cliquez pour lire'));
+      card.addEventListener('click', () => renderIncident(inc.id, dayId));
+      frag.appendChild(card);
+    });
+  } else {
+    const card = el('div','inc minor');
+    card.style.cursor = 'default';
+    card.appendChild(el('div','inc-lbl i','⚓ Situation'));
+    card.appendChild(el('div','inc-ttl','Punta Cana en vue'));
+    card.appendChild(el('div','inc-sub',"L'accostage dans 3 heures. Dernière chance d'accuser."));
+    frag.appendChild(card);
+  }
+
+  // Map title
+  frag.appendChild(el('div','map-ttl','Plan du MS Théodora'));
+
+  // Room grid
+  const grid = el('div','rooms');
+  ROOMS.forEach(r => {
+    const availClues = r.clues.filter(c => c.day <= dayId);
+    const newClues   = availClues.filter(c => !ST.cluesFound.has(c.id));
+    const isCrime    = r.crime_day > 0 && r.crime_day <= dayId;
+    const here       = suspectsInRoom(r.id, dayId);
+    const btn = el('button','room-btn'+(newClues.length>0?' has-clue':'')+(isCrime?' is-crime':''));
+    btn.appendChild(el('span','r-ico',r.icon));
+    btn.appendChild(document.createTextNode(r.name));
+    btn.appendChild(el('span','r-sub',here.map(s=>s.name).join(', ')||'Personne'));
+    btn.addEventListener('click', () => renderRoom(r.id, dayId));
+    grid.appendChild(btn);
+  });
+  frag.appendChild(grid);
+
+  // Bottom nav
+  const nav = el('div','btn-row');
+  if (dayId > 1) {
+    const bk = el('button','btn btn-g','← Jour '+(dayId-1));
+    bk.addEventListener('click', () => renderDay(dayId-1));
+    nav.appendChild(bk);
+  }
+  if (dayId < 5) {
+    const nx = el('button','btn','Jour '+(dayId+1)+' →');
+    nx.addEventListener('click', () => { if (ST.maxDay < dayId+1) ST.maxDay = dayId+1; buildNav(); renderDay(dayId+1); });
+    nav.appendChild(nx);
+  }
+  const acc = el('button','btn btn-d','⚖️ Accuser');
+  acc.style.marginLeft = 'auto';
+  acc.addEventListener('click', renderAccusation);
+  nav.appendChild(acc);
+  frag.appendChild(nav);
+
+  setView(frag);
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER: INCIDENT
+// ═══════════════════════════════════════════════════
+function renderIncident(incId, dayId) {
+  const day = DAYS.find(d=>d.id===dayId);
+  const inc = day.incidents.find(i=>i.id===incId);
+  ST.incRead.add(incId);
+  updateStats();
+
+  const frag = document.createDocumentFragment();
+
+  // Back button
+  const brow = el('div','btn-row'); brow.style.marginBottom='14px';
+  const bk = el('button','btn btn-g','← Retour au Jour '+dayId);
+  bk.addEventListener('click', () => renderDay(dayId));
+  brow.appendChild(bk); frag.appendChild(brow);
+
+  // Event box
+  const box = el('div','ev-box '+(inc.type==='murder'?'murder':'minor'));
+  box.appendChild(el('span','ev-lbl '+(inc.type==='murder'?'m':'i'), inc.type==='murder'?'🩸 Meurtre':'⚠️ Incident'));
+  box.appendChild(el('div','ev-ttl',inc.title));
+  const body = el('div','ev-body'); body.innerHTML = inc.body;
+  box.appendChild(body);
+  frag.appendChild(box);
+
+  const hint = el('p','sec-lbl','→ Explorez les pièces du bateau pour trouver les indices liés à cet événement.');
+  hint.style.marginBottom = '14px';
+  frag.appendChild(hint);
+
+  const brow2 = el('div','btn-row');
+  const bk2 = el('button','btn btn-g','← Retour au plan');
+  bk2.addEventListener('click', () => renderDay(dayId));
+  brow2.appendChild(bk2); frag.appendChild(brow2);
+
+  setView(frag);
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER: ROOM
+// ═══════════════════════════════════════════════════
+function renderRoom(roomId, dayId) {
+  ST.backTo = () => renderDay(dayId);
+  const room = ROOMS.find(r=>r.id===roomId);
+  const frag = document.createDocumentFragment();
+
+  // Back
+  const brow = el('div','btn-row'); brow.style.marginBottom='13px';
+  const bk = el('button','btn btn-g','← Retour au plan');
+  bk.addEventListener('click', () => renderDay(dayId));
+  brow.appendChild(bk); frag.appendChild(brow);
+
+  // Room header
+  const rhdr = el('div','room-hdr');
+  rhdr.appendChild(el('div','room-ico',room.icon));
+  rhdr.appendChild(el('div','room-ttl',room.name));
+  frag.appendChild(rhdr);
+
+  // Dynamic description
+  frag.appendChild(el('p','room-desc', room.desc[dayId]||room.desc[1]));
+
+  // Crime scene
+  if (room.crime_day > 0 && room.crime_day <= dayId) {
+    const crimes = {
+      2:"Romuald Fabre a été retrouvé poignardé dans cette pièce. La cabine 14 est sous scellés depuis le Jour 2.",
+      3:"Ingrid Larsson a été retrouvée frappée derrière un bloc moteur. Son poste de travail est intact.",
+      4:"Driss Aouad a été retrouvé étranglé ici. Une tache de sang effacée a été révélée aux UV."
+    };
+    const cb = el('div','ev-box crime');
+    cb.appendChild(el('span','ev-lbl m','🩸 Scène de crime'));
+    cb.appendChild(el('div','ev-body',crimes[room.crime_day]));
+    frag.appendChild(cb);
+  }
+
+  // Clues
+  const availClues = room.clues.filter(c => c.day <= dayId);
+  if (availClues.length > 0) {
+    frag.appendChild(el('span','sec-lbl','Indices dans cette pièce'));
+    availClues.forEach(c => {
+      const isNew = !ST.cluesFound.has(c.id);
+      if (isNew) { ST.cluesFound.add(c.id); updateStats(); }
+      frag.appendChild(el('div','clue-row'+(isNew?' new':''), '🔍 &nbsp;'+c.text));
+    });
+  } else {
+    frag.appendChild(el('p',null,'Aucun indice particulier ici pour l\'instant.')).style.cssText = 'font-size:.75rem;color:var(--mist);font-style:italic;margin-bottom:14px;';
+  }
+
+  // Suspects
+  const here = suspectsInRoom(roomId, dayId);
+  if (here.length > 0) {
+    frag.appendChild(el('span','sec-lbl','Personnes présentes'));
+    here.forEach(s => {
+      const talked = ST.talked.has(s.id);
+      const btn = el('button','person-btn'+(talked?' talked':''));
+      const av = el('div','pav',s.emoji);
+      const info = el('div','pinfo');
+      info.appendChild(el('div','pname',s.name));
+      info.appendChild(el('div','prole',s.role+(talked?' · déjà interrogé ✓':'')));
+      btn.appendChild(av);
+      btn.appendChild(info);
+      btn.appendChild(el('div','parr','Parler →'));
+      btn.addEventListener('click', () => renderDialogue(s.id, roomId, dayId));
+      frag.appendChild(btn);
+    });
+  } else {
+    const p = el('p',null,'Personne de particulier ici en ce moment.');
+    p.style.cssText = 'font-size:.75rem;color:var(--mist);font-style:italic;margin-bottom:14px;';
+    frag.appendChild(p);
+  }
+
+  // Back button (bottom)
+  const brow2 = el('div','btn-row'); brow2.style.marginTop='8px';
+  const bk2 = el('button','btn btn-g','← Retour au plan');
+  bk2.addEventListener('click', () => renderDay(dayId));
+  brow2.appendChild(bk2); frag.appendChild(brow2);
+
+  setView(frag);
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER: DIALOGUE
+// ═══════════════════════════════════════════════════
+function renderDialogue(suspectId, roomId, dayId) {
+  ST.talked.add(suspectId);
+  updateStats();
+
+  const s = SUSPECTS.find(x=>x.id===suspectId);
+  const d = s.days[dayId] || s.days[1]; // fallback to day 1 if missing
+  const frag = document.createDocumentFragment();
+
+  // Back
+  const brow = el('div','btn-row'); brow.style.marginBottom='13px';
+  const bk = el('button','btn btn-g','← Retour à la pièce');
+  bk.addEventListener('click', () => renderRoom(roomId, dayId));
+  brow.appendChild(bk); frag.appendChild(brow);
+
+  // Header
+  const dhdr = el('div','day-hdr');
+  dhdr.appendChild(el('div','day-lbl','Interrogatoire — Jour '+dayId));
+  dhdr.appendChild(el('div','day-ttl',s.emoji+'  '+s.name));
+  dhdr.appendChild(el('div','day-sub',s.role));
+  frag.appendChild(dhdr);
+
+  // Dialogue box
+  const box = el('div','dial-box');
+  box.appendChild(el('div','dial-name',s.emoji+'  '+s.name+' <span style="font-size:.66rem;color:var(--mist);font-weight:400">— '+s.role+'</span>'));
+  box.appendChild(el('div','dial-alibi','Alibi : « '+d.alibi+' »'));
+  box.appendChild(el('span','sec-lbl','Il/Elle déclare :'));
+
+  // Response area
+  const respArea = el('div');
+
+  d.lines.forEach((line, i) => {
+    const dline = el('div','dline','« '+line+' »');
+    dline.addEventListener('click', () => {
+      box.querySelectorAll('.dline').forEach(dl => dl.classList.remove('used'));
+      dline.classList.add('used');
+      respArea.innerHTML = '';
+      respArea.appendChild(el('div','dresp','📎  '+d.resp[i]));
+    });
+    box.appendChild(dline);
+  });
+
+  box.appendChild(respArea);
+  frag.appendChild(box);
+
+  // Back button bottom
+  const brow2 = el('div','btn-row');
+  const bk2 = el('button','btn btn-g','← Retour à la pièce');
+  bk2.addEventListener('click', () => renderRoom(roomId, dayId));
+  brow2.appendChild(bk2); frag.appendChild(brow2);
+
+  setView(frag);
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER: ACCUSATION
+// ═══════════════════════════════════════════════════
+function renderAccusation() {
+  const frag = document.createDocumentFragment();
+
+  const hdr = el('div','day-hdr');
+  hdr.appendChild(el('div','day-lbl','Jour '+ST.day+' — Accusation'));
+  hdr.appendChild(el('div','day-ttl','Désigner le coupable'));
+  hdr.appendChild(el('div','day-sub',"L'accostage approche. Le tueur sera libre dès le débarquement."));
+  frag.appendChild(hdr);
+
+  frag.appendChild(el('div','cdown','⏳ <strong>Dernière chance</strong> — Sans accusation, il disparaît dans la foule.'));
+
+  // Notebook
+  const nb = el('div','notebook');
+  nb.appendChild(el('div','nb-ttl','📓  Carnet d\'enquête'));
+  const allClues = ROOMS.flatMap(r=>r.clues).filter(c=>ST.cluesFound.has(c.id));
+  if (allClues.length === 0) {
+    nb.appendChild(el('div','nb-e','Aucun indice collecté. Explorez les pièces du bateau.'));
+  } else {
+    allClues.forEach(c => nb.appendChild(el('div','nb-e',c.text)));
+  }
+  frag.appendChild(nb);
+
+  frag.appendChild(el('span','sec-lbl','Qui est le tueur ?'));
+
+  const grid = el('div','acc-grid');
+  SUSPECTS.forEach(s => {
+    const card = el('div','acc-card');
+    card.appendChild(el('div','ac-av',s.emoji));
+    card.appendChild(el('div','ac-n',s.name));
+    card.appendChild(el('div','ac-r',s.role));
+    card.addEventListener('click', () => showConfirm(s.id));
+    grid.appendChild(card);
+  });
+  frag.appendChild(grid);
+
+  const brow = el('div','btn-row');
+  const bk = el('button','btn btn-g','← Retour');
+  bk.addEventListener('click', () => renderDay(ST.day));
+  brow.appendChild(bk); frag.appendChild(brow);
+
+  setView(frag);
+}
+
+
+// ═══════════════════════════════════════════════════
+// CONFIRMATION MODAL
+// ═══════════════════════════════════════════════════
+function showConfirm(suspectId) {
+  const s = SUSPECTS.find(x=>x.id===suspectId);
+  const ov = document.getElementById('confirm-overlay');
+  ov.innerHTML = '';
+  ov.style.display = 'flex';
+
+  const box = el('div','confirm-box');
+  box.appendChild(el('div','cb-ico',s.emoji));
+  box.appendChild(el('div','cb-name',s.name));
+  box.appendChild(el('div','cb-role',s.role));
+  const q = el('div','cb-q');
+  q.innerHTML = 'Vous êtes certain(e) de vouloir accuser <strong>'+s.name+'</strong> pour les trois meurtres commis à bord ?';
+  box.appendChild(q);
+
+  const btns = el('div','confirm-btns');
+  const no = el('button','btn btn-g','← Annuler');
+  no.addEventListener('click', () => { ov.style.display = 'none'; });
+  const yes = el('button','btn btn-d','⚖️  Accuser');
+  yes.addEventListener('click', () => { ov.style.display = 'none'; renderEnding(suspectId); });
+  btns.appendChild(no); btns.appendChild(yes);
+  box.appendChild(btns);
+  ov.appendChild(box);
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER: ENDING
+// ═══════════════════════════════════════════════════
+function renderEnding(suspectId) {
+  const ok = suspectId === 'inconnu';
+  const chosen = SUSPECTS.find(s=>s.id===suspectId);
+  const killer = SUSPECTS.find(s=>s.id==='inconnu');
+  const score = ST.cluesFound.size>=13?'★★★★★':ST.cluesFound.size>=9?'★★★★☆':ST.cluesFound.size>=5?'★★★☆☆':'★★☆☆☆';
+
+  function makeRestart(cls) {
+    const r = el('button',cls,'↺  Nouvelle enquête');
+    r.addEventListener('click', () => {
+      document.getElementById('bad-overlay').style.display='none';
+      document.getElementById('bad-overlay').classList.remove('show');
+      ST = { day:1, maxDay:1, cluesFound:new Set(), talked:new Set(), incRead:new Set(), backTo:null };
+      showScr('intro');
+    });
+    return r;
+  }
+
+  if (ok) {
+    // ── BONNE FIN : plein écran, fondu, musique ──
+    showScr('end');
+    const endScr = document.getElementById('s-end');
+    endScr.style.cssText = 'display:block;min-height:100vh;background:#000;transition:background 2s ease;';
+
+    const wrap = el('div','end-wrap good');
+    wrap.style.cssText = 'opacity:0;transition:opacity 1.4s ease 0.8s;padding-top:80px;';
+
+    wrap.appendChild(el('div','end-ico','⚖️'));
+    wrap.appendChild(el('h2',null,'Justice est rendue.'));
+    const p = el('p');
+    p.innerHTML = 'Vous avez démasqué <strong>'+killer.name+'</strong> — embarqué sous le faux prénom <em>Thomas</em> depuis Marseille. Les trois victimes partageaient un secret sur son passé : un scandale financier étouffé, des vies brisées.<br><br>Quand les gardes l\'ont interpellé dans le couloir B, il n\'a pas résisté.<br><em>« Je savais que vous arriviez. »</em><br><br>À Punta Cana, les autorités l\'attendaient.';
+    wrap.appendChild(p);
+
+    const perf = el('div'); perf.style.cssText='font-size:.7rem;color:var(--mist);margin-bottom:4px;'; perf.textContent='Performance d\'enquêteur';
+    const sc = el('div'); sc.style.cssText='font-size:1.5rem;color:var(--gold);margin-bottom:6px;'; sc.textContent=score;
+    const stats = el('div'); stats.style.cssText='font-size:.68rem;color:var(--mist);margin-bottom:20px;'; stats.textContent=ST.cluesFound.size+' indices · '+ST.talked.size+' suspects interrogés';
+    wrap.appendChild(perf); wrap.appendChild(sc); wrap.appendChild(stats);
+    wrap.appendChild(makeRestart('btn'));
+
+    document.getElementById('end-content').innerHTML = '';
+    document.getElementById('end-content').appendChild(wrap);
+
+    setTimeout(() => {
+      endScr.style.background = 'transparent';
+      wrap.style.opacity = '1';
+    }, 120);
+
+  } else {
+    // ── MAUVAISE FIN : rien d'abord, puis popup du bas + musique ──
+    const ov = document.getElementById('bad-overlay');
+    const popup = document.getElementById('bad-popup');
+    popup.innerHTML = '';
+
+    const ico = el('div'); ico.style.cssText='font-size:2.8rem;text-align:center;margin-bottom:12px;'; ico.textContent='🩸';
+    popup.appendChild(ico);
+
+    const h2 = el('h2');
+    h2.style.cssText='font-family:\'Playfair Display\',serif;font-size:1.7rem;color:var(--red);margin-bottom:14px;text-align:center;';
+    h2.textContent='Mauvaise piste.';
+    popup.appendChild(h2);
+
+    const p = el('p');
+    p.style.cssText='font-size:.81rem;color:var(--mist);line-height:1.8;text-align:center;max-width:440px;margin:0 auto 14px;';
+    p.innerHTML = '<strong>'+chosen.name+'</strong> a été innocenté(e) faute de preuves suffisantes. Dans la confusion qui a suivi, le véritable coupable a débarqué tranquillement parmi les autres passagers.<br><br>Il est quelque part là-dehors. Libre. Et vous ne saurez peut-être jamais avec certitude qui c\'était.';
+    popup.appendChild(p);
+
+    const hint = el('div');
+    hint.style.cssText='font-size:.74rem;color:var(--mist);margin-bottom:20px;font-style:italic;text-align:center;';
+    hint.textContent='Recommencez l\'enquête. Les indices sont là. La vérité aussi.';
+    popup.appendChild(hint);
+
+    const brow = el('div'); brow.style.cssText='display:flex;justify-content:center;gap:10px;flex-wrap:wrap;';
+    const cancel = el('button','btn btn-g','← Continuer l\'enquête');
+    cancel.addEventListener('click', () => { ov.classList.remove('show'); setTimeout(()=>{ ov.style.display='none'; },300); });
+    brow.appendChild(cancel);
+    brow.appendChild(makeRestart('btn btn-d'));
+    popup.appendChild(brow);
+
+    setTimeout(() => {
+      ov.style.display = 'flex';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        ov.classList.add('show');
+      }));
+    }, 420);
+  }
+}
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+document.getElementById('btn-start').addEventListener('click', () => {
+  showScr('game');
+  buildNav();
+  renderDay(1);
+});
+</script>
+</body>
+</html>
